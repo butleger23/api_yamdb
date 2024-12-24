@@ -6,16 +6,18 @@ User = get_user_model()
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    confirmation_code = (
-        serializers.SerializerMethodField()
-    )  # Скорее всего придется убрать когда буду делать подтверждение по email
-
     class Meta:
         fields = ('username', 'email', 'confirmation_code')
         model = User
 
     def get_confirmation_code(self, obj):
         return randint(10000, 99999)
+
+    def create(self, validated_data):
+        return User.objects.create(
+            confirmation_code=self.get_confirmation_code(self),
+            **validated_data,
+        )
 
     def validate_username(self, value):
         if value == 'me':
