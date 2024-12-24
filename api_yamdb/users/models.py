@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+CONFIRMATION_CODE_LENGTH = 5
+
 ROLE_CHOICES = (
     ('user', 'user'),
     ('moderator', 'moderator'),
@@ -14,4 +16,7 @@ class YamdbUser(AbstractUser):
         'Роль', default='user', max_length=9, choices=ROLE_CHOICES
     )
     email = models.EmailField('Почта', max_length=254, unique=True)
-    confirmation_code = models.IntegerField('Код подтверждения')
+    confirmation_code = models.CharField(
+        'Код подтверждения',
+        max_length=CONFIRMATION_CODE_LENGTH
+    )
