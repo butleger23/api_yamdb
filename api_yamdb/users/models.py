@@ -14,3 +14,4 @@ class YamdbUser(AbstractUser):
         'Роль', default='user', max_length=9, choices=ROLE_CHOICES
     )
     email = models.EmailField('Почта', max_length=254, unique=True)
+    confirmation_code = models.IntegerField('Код подтверждения')
