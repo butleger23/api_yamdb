@@ -14,3 +14,4 @@ class YamdbUser(AbstractUser):
     role = models.CharField(
         'Роль', default='user', max_length=9, choices=ROLE_CHOICES
     )
+    confirmation_code = models.IntegerField('Код подтверждения')
