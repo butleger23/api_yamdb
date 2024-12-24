@@ -16,3 +16,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def get_confirmation_code(self, obj):
         return randint(10000, 99999)
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError('Нельзя выбрать данный username')
