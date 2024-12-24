@@ -26,6 +26,8 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
 ]
 
+AUTH_USER_MODEL = 'users.YamdbUser'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
