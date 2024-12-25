@@ -7,12 +7,5 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if request.user.is_staff or request.user.role == 'admin':
             return True
 
-        # Разрешаем доступ для модераторов к созданию и удалению объектов
-        if request.user.role == 'admin' and view.action in ['create', 'destroy']:
-            return True
-
-        # Разрешаем доступ для получения данных
-        if view.action in ['list', 'retrieve']:
-            return True
-
-        return False
+        # Разрешаем доступ для безопасных методов (чтение)
+        return request.method in permissions.SAFE_METHODS
