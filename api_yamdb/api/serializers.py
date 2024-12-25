@@ -1,7 +1,8 @@
 from django.db.models import Avg
 from rest_framework import serializers
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 
-from reviews.models import Category, Genre, Title
 from reviews.models import Category, Genre, Title, Review, Comment
 
 
@@ -26,6 +27,11 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
+
+    def validate_year(self, value):
+        if value > timezone.now().year:
+            raise ValidationError('Вы не можете указать год в будущем времени')
+        return value
 
     def get_rating(self, obj):
         return round(
