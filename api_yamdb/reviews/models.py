@@ -32,20 +32,28 @@ class Title(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     year = models.IntegerField(verbose_name='Год', null=True, blank=True)
     description = models.CharField(
-        verbose_name='Описание', null=True, blank=True, max_length=256
+        verbose_name='Описание',
+        null=True,
+        blank=True,
+        max_length=256
     )
     genre = models.ForeignKey(
-        Genre, on_delete=models.SET_NULL, blank=True, null=True,
-        verbose_name='Жанр', related_name='titles'
+        Genre,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name='Жанр',
+        related_name='titles'
     )
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, blank=True,
-        null=True, verbose_name='Категория', related_name='titles'
+        Category,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name='Категория',
+        related_name='titles'
     )
-    # rating = ??? непонятно в "redoc" насчет этого поля
-    # ответ: тут оставить пусто, в сериализаторе - новое поле рейтинг просто
-    # заглушку, позже туда methodfield прикручу когда рейтингом займусь
-
+  
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
