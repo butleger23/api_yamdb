@@ -6,17 +6,17 @@ from .viewsets import ListDeleteCreateViewSet
 
 class CategoryViewSet(ListDeleteCreateViewSet):
     queryset = Category.objects.all()
-    serializer_classes = CategorySerializer
+    serializer_class = CategorySerializer
     permission_classes = [pass,]
 
 
-class GenresViewSet(ListDeleteCreateViewSet):
-    queryset = Genres.objects.all()
-    serializer_classes = CategorySerializer
+class GenreViewSet(ListDeleteCreateViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
     permission_classes = [pass,]
 
 
-class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Titles.objects.all()
-    serializer_classes = CategorySerializer
-    permission_classes = [pass,]
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    permission_classes = [IsAuthorOrReadOnly]
