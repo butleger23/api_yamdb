@@ -1,6 +1,10 @@
+import os
+
+from dotenv import load_dotenv
 from pathlib import Path
 
 
+load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -27,6 +31,14 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = 'users.YamdbUser'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.getenv('host_email')
+EMAIL_HOST_PASSWORD = os.getenv('app_password')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
