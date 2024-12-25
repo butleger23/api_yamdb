@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'reviews.apps.ReviewsConfig',
     'api.apps.ApiConfig',
+    'rest_framework',
+    'django_filters',
 ]
 
 AUTH_USER_MODEL = 'users.YamdbUser'
