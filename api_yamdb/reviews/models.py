@@ -1,4 +1,7 @@
+from django.core.exceptions import ValidationError
 from django.db import models
+
+from users.models import YamdbUser
 
 
 class Category(models.Model):
@@ -13,7 +16,7 @@ class Category(models.Model):
         return self.name
 
 
-class Genres(models.Model):
+class Genre(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     slug = models.SlugField(unique=True, max_length=50, verbose_name='Слаг')
 
@@ -25,14 +28,14 @@ class Genres(models.Model):
         return self.name
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     year = models.IntegerField(verbose_name='Год', null=True, blank=True)
     description = models.CharField(
         verbose_name='Описание', null=True, blank=True, max_length=100
     )
     genre = models.ForeignKey(
-        Genres, on_delete=models.SET_NULL, blank=True,
+        Genre, on_delete=models.SET_NULL, blank=True,
         verbose_name='Жанр', related_name='titles'
     )
     category = models.ForeignKey(
@@ -40,6 +43,8 @@ class Titles(models.Model):
         null=True, verbose_name='Категория', related_name='titles'
     )
     # rating = ??? непонятно в "redoc" насчет этого поля
+    # ответ: тут оставить пусто, в сериализаторе - новое поле рейтинг просто
+    # заглушку, позже туда methodfield прикручу когда рейтингом займусь
 
     class Meta:
         verbose_name = 'Произведение'
@@ -47,5 +52,62 @@ class Titles(models.Model):
 
     def __str__(self):
         return self.name
-        
-# Create your models here.
+
+
+class Review(models.Model):
+    text = models.TextField(verbose_name='Текст')
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Произведение'
+    )
+    author = models.ForeignKey(
+        YamdbUser,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Автор'
+    )
+    score = models.IntegerField(verbose_name='Рейтинг')
+    pub_date = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Дата ревью'
+    )
+
+    class Meta:
+        verbose_name = 'Ревью'
+        verbose_name_plural = 'Ревью'
+
+    def __str__(self):
+        return self.text
+
+    def clean(self):
+        if not (1 <= self.score <= 10):
+            raise ValidationError('Рейтинг должен быть от 1 до 10!')
+
+
+class Comment(models.Model):
+    text = models.TextField(verbose_name='Текст')
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Ревью'
+    )
+    author = models.ForeignKey(
+        YamdbUser,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Автор'
+    )
+    pub_date = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Дата ревью'
+    )
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text
