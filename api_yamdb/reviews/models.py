@@ -53,7 +53,7 @@ class Title(models.Model):
         verbose_name='Категория',
         related_name='titles'
     )
-  
+
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
@@ -105,7 +105,7 @@ class Comment(models.Model):
     author = models.ForeignKey(
         YamdbUser,
         on_delete=models.CASCADE,
-        related_name='reviews',
+        related_name='comments',
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
