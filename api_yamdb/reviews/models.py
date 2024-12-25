@@ -13,7 +13,7 @@ class Category(models.Model):
         return self.name
 
 
-class Genres(models.Model):
+class Genre(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     slug = models.SlugField(unique=True, max_length=50, verbose_name='Слаг')
 
@@ -25,14 +25,14 @@ class Genres(models.Model):
         return self.name
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     year = models.IntegerField(verbose_name='Год', null=True, blank=True)
-    description = models.Charfield(
-        verbose_name='Описание', null=True, blank=True
+    description = models.CharField(
+        verbose_name='Описание', null=True, blank=True, max_length=256,
     )
     genre = models.ForeignKey(
-        Genres, on_delete=models.SET_NULL, blank=True,
+        Genre, on_delete=models.SET_NULL, blank=True, null=True,
         verbose_name='Жанр', related_name='titles'
     )
     category = models.ForeignKey(
