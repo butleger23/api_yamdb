@@ -1,6 +1,8 @@
 from random import randint
 from rest_framework import viewsets
 from rest_framework import mixins
+from rest_framework.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
@@ -29,11 +31,13 @@ class AuthViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
     @action(detail=False, methods=['post'])
     def token(self, request):
-        user = User.objects.get(username=request.data['username']) #use get or 404
-        confirmation_code = request.data['confirmation_code']
+        user = get_object_or_404(User, username=request.data['username'])
+        confirmation_code = request.data.get('confirmation_code')
+        if not confirmation_code:
+            raise ValidationError('Bad request')
         if confirmation_code == user.confirmation_code:
             return Response({'token': 'abra'}) # сделать на jwt
-        return Response('no luck')
+        return Response('Wrong confirmation code')
 
     @action(detail=False, methods=['post'])
     def signup(self, request):
