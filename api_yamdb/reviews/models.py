@@ -1,4 +1,7 @@
+from django.core.exceptions import ValidationError
 from django.db import models
+
+from users.models import YamdbUser
 
 
 class Category(models.Model):
@@ -34,12 +37,27 @@ class Title(models.Model):
     genre = models.ForeignKey(
         Genre, on_delete=models.SET_NULL, blank=True, null=True,
         verbose_name='Жанр', related_name='titles'
+        verbose_name='Описание',
+        null=True,
+        blank=True,
+        max_length=256
+    )
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name='Жанр',
+        related_name='titles'
     )
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, blank=True,
-        null=True, verbose_name='Категория', related_name='titles'
+        Category,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name='Категория',
+        related_name='titles'
     )
-    # rating = ??? непонятно в "redoc" насчет этого поля
 
     class Meta:
         verbose_name = 'Произведение'
@@ -47,5 +65,62 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
-        
-# Create your models here.
+
+
+class Review(models.Model):
+    text = models.TextField(verbose_name='Текст')
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Произведение'
+    )
+    author = models.ForeignKey(
+        YamdbUser,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Автор'
+    )
+    score = models.IntegerField(verbose_name='Рейтинг')
+    pub_date = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Дата ревью'
+    )
+
+    class Meta:
+        verbose_name = 'Ревью'
+        verbose_name_plural = 'Ревью'
+
+    def __str__(self):
+        return self.text
+
+    def clean(self):
+        if not (1 <= self.score <= 10):
+            raise ValidationError('Рейтинг должен быть от 1 до 10!')
+
+
+class Comment(models.Model):
+    text = models.TextField(verbose_name='Текст')
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Ревью'
+    )
+    author = models.ForeignKey(
+        YamdbUser,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор'
+    )
+    pub_date = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Дата ревью'
+    )
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text
