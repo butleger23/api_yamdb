@@ -29,7 +29,7 @@ class Titles(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     year = models.IntegerField(verbose_name='Год', null=True, blank=True)
     description = models.CharField(
-        verbose_name='Описание', null=True, blank=True
+        verbose_name='Описание', null=True, blank=True, max_length=100
     )
     genre = models.ForeignKey(
         Genres, on_delete=models.SET_NULL, blank=True,
