@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework import mixins
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -19,9 +20,6 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
-
-    def perform_create(self, serializer):
-        serializer.save(confirmation_code=get_confirmation_code())
 
 
 class AuthViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -42,6 +40,4 @@ class AuthViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     @action(detail=False, methods=['post'])
     def signup(self, request):
         return super().create(request)
-
-    def perform_create(self, serializer):
-        serializer.save(confirmation_code=get_confirmation_code())
+    
