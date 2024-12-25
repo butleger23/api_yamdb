@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
 
+from .utils import get_confirmation_code
+
 from .serializers import UserSerializer
 
 
@@ -18,11 +20,8 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     lookup_field = 'username'
 
-    def get_confirmation_code(self):
-        return str(randint(10000, 99999))
-
     def perform_create(self, serializer):
-        serializer.save(confirmation_code=self.get_confirmation_code())
+        serializer.save(confirmation_code=get_confirmation_code())
 
 
 class AuthViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -37,14 +36,11 @@ class AuthViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             raise ValidationError('Bad request')
         if confirmation_code == user.confirmation_code:
             return Response({'token': 'abra'}) # сделать на jwt
-        return Response('Wrong confirmation code')
+        return ValidationError('Wrong confirmation code')
 
     @action(detail=False, methods=['post'])
     def signup(self, request):
         return super().create(request)
 
-    def get_confirmation_code(self):
-        return str(randint(10000, 99999))
-
     def perform_create(self, serializer):
-        serializer.save(confirmation_code=self.get_confirmation_code())
+        serializer.save(confirmation_code=get_confirmation_code())
