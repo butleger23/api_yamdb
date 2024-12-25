@@ -37,6 +37,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         exclude = ('title',)
 
     def validate_score(self, value):
+        if not isinstance(value, int):
+            raise serializers.ValidationError('Должно быть целое число!')
         if not (1 <= value <= 10):
             raise serializers.ValidationError('Рейтинг должен быть от 1 до 10')
         return value
