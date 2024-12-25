@@ -1,6 +1,7 @@
 from django.db.models import Avg
 from rest_framework import serializers
 
+from reviews.models import Category, Genre, Title
 from reviews.models import Category, Genre, Title, Review, Comment
 
 
@@ -19,7 +20,6 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField()
 
@@ -68,3 +68,4 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         exclude = ('review',)
+        
