@@ -3,14 +3,16 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_nested.routers import NestedDefaultRouter
 
 from .views import (
-    TitleViewSet, ReviewViewSet, CommentViewSet
+    TitleViewSet, ReviewViewSet, CommentViewSet,
+    CategoryViewSet, GenreViewSet
 )
 
 
 router = DefaultRouter()
 # предлагаю сюда остальное по жанрам и категориям
+router.register('categories', CategoryViewSet, basename='categories')
+router.register('genres', GenreViewSet, basename='genres')
 router.register(r'titles', TitleViewSet, basename='title')
-
 title_router = NestedDefaultRouter(router, r'titles', lookup='title')
 title_router.register(r'reviews', ReviewViewSet, basename='title-reviews')
 
