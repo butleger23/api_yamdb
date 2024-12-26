@@ -1,7 +1,9 @@
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from users.models import YamdbUser
+
+YamdbUser = get_user_model()
 
 
 class Category(models.Model):
@@ -32,11 +34,8 @@ class Title(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     year = models.IntegerField(verbose_name='Год', null=True, blank=True)
     description = models.CharField(
-        verbose_name='Описание',
-        null=True,
-        blank=True,
-        max_length=256
-    )
+        verbose_name='Описание', null=True, blank=True, max_length=256,
+    ),
     genre = models.ForeignKey(
         Genre,
         on_delete=models.SET_NULL,
@@ -44,7 +43,7 @@ class Title(models.Model):
         null=True,
         verbose_name='Жанр',
         related_name='titles'
-    )
+    ),
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -83,6 +82,12 @@ class Review(models.Model):
     )
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author'],
+                name='unique_review_per_author_per_title'
+            )
+        ]
         verbose_name = 'Ревью'
         verbose_name_plural = 'Ревью'
 
