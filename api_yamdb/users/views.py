@@ -5,11 +5,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import UserSerializer, TokenSerializer, SignupSerializer
+from api.permissions import IsAdmin
+from users.serializers import UserSerializer, TokenSerializer, SignupSerializer
 
 
 User = get_user_model()
@@ -19,9 +21,11 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
+    permission_classes = (IsAdmin,)
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def signup(request):
     serializer = SignupSerializer(data=request.data)
     if serializer.is_valid():
@@ -31,7 +35,7 @@ def signup(request):
             user = serializer.save()
         confirmation_code = tokens.default_token_generator.make_token(user)
         send_mail(
-            subject='Yamdb registration',
+            subject='Yamdb confirmation code',
             message=f'Here is your confirmation code {confirmation_code}',
             from_email=os.getenv('host_email'),
             recipient_list=[serializer.validated_data['email']],
@@ -42,6 +46,7 @@ def signup(request):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def token(request):
     serializer = TokenSerializer(data=request.data)
     if serializer.is_valid():

@@ -2,8 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-CONFIRMATION_CODE_LENGTH = 5
-
 ROLE_CHOICES = (
     ('user', 'user'),
     ('moderator', 'moderator'),
