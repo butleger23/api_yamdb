@@ -5,8 +5,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -22,6 +22,23 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     lookup_field = 'username'
     permission_classes = (IsAdmin,)
+
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+        permission_classes=(IsAuthenticated,),
+    )
+    def me(self, request, pk=None):
+        user = request.user
+        if request.method == 'GET':
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -41,7 +58,7 @@ def signup(request):
             recipient_list=[serializer.validated_data['email']],
             fail_silently=False,
         )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -54,7 +71,9 @@ def token(request):
         user = get_object_or_404(User, username=request.data['username'])
         if tokens.default_token_generator.check_token(user, confirmation_code):
             refresh = RefreshToken.for_user(user)
-            return Response({'token': str(refresh.access_token)})
+            return Response(
+                {'token': str(refresh.access_token)}, status=status.HTTP_200_OK
+            )
         return Response(
             'Wrong confirmaton code', status=status.HTTP_400_BAD_REQUEST
         )
