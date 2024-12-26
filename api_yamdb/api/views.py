@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, exceptions
 from rest_framework.pagination import LimitOffsetPagination
+from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Genre, Title, Review
 from .viewsets import ListDeleteCreateViewSet
@@ -9,6 +10,7 @@ from .serializers import (
     CommentSerializer
 )
 from .permissions import IsAdminOrReadOnly, AuthorOrReadOnly
+from .filters import TitleFilter
 
 
 class CategoryViewSet(ListDeleteCreateViewSet):
@@ -27,6 +29,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = [IsAdminOrReadOnly,]
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
 
 
 class Crud5ViewSet(viewsets.ModelViewSet):
