@@ -1,16 +1,15 @@
-from rest_framework import viewsets
-from rest_framework import mixins
-from rest_framework.exceptions import ValidationError
-from rest_framework_simplejwt.tokens import RefreshToken
+import os
+
+from django.contrib.auth import get_user_model, tokens
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from .utils import get_confirmation_code
-
-from .serializers import UserSerializer
+from .serializers import UserSerializer, TokenSerializer, SignupSerializer
 
 
 User = get_user_model()
@@ -22,22 +21,36 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
 
 
-class AuthViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+@api_view(['POST'])
+def signup(request):
+    serializer = SignupSerializer(data=request.data)
+    if serializer.is_valid():
+        try:
+            user = User.objects.get(username=request.data['username'])
+        except ObjectDoesNotExist:
+            user = serializer.save()
+        confirmation_code = tokens.default_token_generator.make_token(user)
+        send_mail(
+            subject='Yamdb registration',
+            message=f'Here is your confirmation code {confirmation_code}',
+            from_email=os.getenv('host_email'),
+            recipient_list=[serializer.validated_data['email']],
+            fail_silently=False,
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['post'])
-    def token(self, request):
+
+@api_view(['POST'])
+def token(request):
+    serializer = TokenSerializer(data=request.data)
+    if serializer.is_valid():
+        confirmation_code = request.data['confirmation_code']
         user = get_object_or_404(User, username=request.data['username'])
-        confirmation_code = request.data.get('confirmation_code')
-        if not confirmation_code:
-            raise ValidationError('Bad request')
-        if confirmation_code == user.confirmation_code:
+        if tokens.default_token_generator.check_token(user, confirmation_code):
             refresh = RefreshToken.for_user(user)
             return Response({'token': str(refresh.access_token)})
-        return ValidationError('Wrong confirmation code')
-
-    @action(detail=False, methods=['post'])
-    def signup(self, request):
-        return super().create(request)
-    
+        return Response(
+            'Wrong confirmaton code', status=status.HTTP_400_BAD_REQUEST
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
