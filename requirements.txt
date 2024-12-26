@@ -25,3 +25,4 @@ toml==0.10.2
 typing_extensions==4.12.2
 tzdata==2024.2
 urllib3==1.26.20
+django-filter==21.1
