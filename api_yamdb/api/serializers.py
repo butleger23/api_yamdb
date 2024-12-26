@@ -65,6 +65,14 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Рейтинг должен быть от 1 до 10')
         return value
 
+    def validate(self, data):
+        if Review.objects.filter(
+            title_id=self.context['view'].kwargs.get('title_id'),
+            author=self.context['request'].user
+        ).exists():
+            raise ValidationError('Вы уже оставляли ревью для этой работы.')
+        return data
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
@@ -75,4 +83,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         exclude = ('review',)
-        
