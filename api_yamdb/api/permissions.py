@@ -9,3 +9,9 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
         # Разрешаем доступ для безопасных методов (чтение)
         return request.method in permissions.SAFE_METHODS
+
+
+class AuthorOrReadOnly(permissions.IsAuthenticatedOrReadOnly):
+
+    def has_object_permission(self, request, view, obj):
+        return request.method == 'GET' or obj.author == request.user
