@@ -19,6 +19,7 @@ User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
@@ -39,8 +40,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
+            serializer.validated_data.pop('role', None)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

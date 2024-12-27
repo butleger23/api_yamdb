@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, exceptions
-from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Genre, Title, Review
@@ -42,7 +41,6 @@ class Crud5ViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(Crud5ViewSet):
     serializer_class = ReviewSerializer
-    pagination_class = LimitOffsetPagination
     permission_classes = [IsAuthorOrModeratorOrReadOnly,]
 
     def get_title(self):
