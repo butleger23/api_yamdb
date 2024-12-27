@@ -20,7 +20,7 @@ class Crud5ViewSet(viewsets.ModelViewSet):
 
 
 class CategoryViewSet(ListDeleteCreateViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly,]
     filter_backends = (filters.SearchFilter, )
@@ -29,7 +29,7 @@ class CategoryViewSet(ListDeleteCreateViewSet):
 
 
 class GenreViewSet(ListDeleteCreateViewSet):
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.all().order_by('id')
     serializer_class = GenreSerializer
     permission_classes = [IsAdminOrReadOnly,]
     filter_backends = (filters.SearchFilter, )
