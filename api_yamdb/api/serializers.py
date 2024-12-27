@@ -35,24 +35,17 @@ class TitleSerializer(serializers.ModelSerializer):
         return value
 
     def validate_name(self, value):
-        print(value)
         if len(value) > 256:
             raise ValidationError(
                 'Название произведения не может быть длиннее 256 символов.'
-                )
+            )
         return value
 
     def get_rating(self, obj):
+        if not obj.reviews.count():
+            return None
         return round(
-            obj.reviews.aggregate(Avg('score')).get('score_avg', None) or 0.0, 2)
-        # also to test this: return obj.reviews.aggregate('score')
-
-        # reviews = obj.reviews.all()
-        # if not reviews.exists():
-        #     return 0.0
-        # total_score = sum(review.score for review in reviews)
-        # average_score = total_score / reviews.count()
-        # return round(average_score, 2)
+            obj.reviews.aggregate(Avg('score')).get('score_avg', None), 2)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
