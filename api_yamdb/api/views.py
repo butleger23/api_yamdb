@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, exceptions, filters, status
-from rest_framework.response import Response
+from rest_framework import viewsets, exceptions, filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Genre, Title, Review
@@ -39,7 +38,8 @@ class GenreViewSet(ListDeleteCreateViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    http_method_names = ['get', 'post', 'patch', 'delete']
+    queryset = Title.objects.all().order_by('id')
     serializer_class = TitleSerializer
     permission_classes = [IsAdminOrReadOnly,]
     filter_backends = (DjangoFilterBackend,)
@@ -55,10 +55,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         serializer.save(category=category, genre=genre)
 
     def perform_update(self, serializer):
-        serializer.save()
-
-    def update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.perform_create(serializer)
 
 
 class ReviewViewSet(Crud5ViewSet):
