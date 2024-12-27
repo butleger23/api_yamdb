@@ -1,3 +1,4 @@
+import re
 from django.contrib.auth import get_user_model
 from dotenv import load_dotenv
 from rest_framework import serializers
@@ -31,13 +32,13 @@ class TokenSerializer(serializers.Serializer):
 
 
 class SignupSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
+    username = serializers.CharField(max_length=150, validators=[])
     email = serializers.EmailField(max_length=254)
 
     def create(self, validated_data):
         return User.objects.create(**validated_data)
 
     def validate_username(self, value):
-        if value == 'me':
+        if value == 'me' or not re.fullmatch(r'^[\w.@+-]+\Z', value): # вынести regexp
             raise serializers.ValidationError('Нельзя выбрать данный username')
         return value

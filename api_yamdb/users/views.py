@@ -19,6 +19,7 @@ User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
@@ -39,8 +40,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
+            serializer.validated_data.pop('role', None)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -48,11 +50,32 @@ class UserViewSet(viewsets.ModelViewSet):
 @permission_classes([AllowAny])
 def signup(request):
     serializer = SignupSerializer(data=request.data)
+
     if serializer.is_valid():
-        try:
-            user = User.objects.get(username=request.data['username'])
-        except ObjectDoesNotExist:
+        user_with_provided_username = User.objects.filter(
+            username=request.data['username']
+        ).first()
+        user_with_provided_email = User.objects.filter(
+            email=request.data['email']
+        ).first()
+        if (
+            not user_with_provided_username
+            and not user_with_provided_email
+        ):
             user = serializer.save()
+        elif user_with_provided_username == user_with_provided_email:
+            user = user_with_provided_username
+        elif user_with_provided_username:
+            return Response(
+                'Юзер с таким username уже существует',
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        elif user_with_provided_email:
+            return Response(
+                'Юзер с таким email уже существует',
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         confirmation_code = tokens.default_token_generator.make_token(user)
         send_mail(
             subject='Yamdb confirmation code',
