@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, serializers
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Genre, Title, Review
@@ -67,6 +67,12 @@ class ReviewViewSet(Crud5ViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
+
+    def create(self, request, *args, **kwargs):
+        title = self.get_title()
+        if Review.objects.filter(title=title, author=request.user).exists():
+            raise serializers.ValidationError('Вы уже оставляли ревью для этой работы.')
+        return super().create(request, *args, **kwargs)
 
 
 class CommentViewSet(Crud5ViewSet):

@@ -42,10 +42,18 @@ class TitleSerializer(serializers.ModelSerializer):
         return value
 
     def get_rating(self, obj):
-        if not obj.reviews.count():
+        reviews = obj.reviews.all()
+        if not reviews.exists():
             return None
-        return round(
-            obj.reviews.aggregate(Avg('score')).get('score_avg', None), 2)
+        average_score = reviews.aggregate(Avg('score')).get('score__avg', None)
+        return round(average_score, 2) if average_score is not None else None
+    
+    # У меня к сож не проходит пайтест:
+    # def get_rating(self, obj):
+    #     if not obj.reviews.count():
+    #         return None
+    #     return round(
+    #         obj.reviews.aggregate(Avg('score')).get('score_avg', None), 2)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -66,12 +74,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        title_id = self.context['view'].kwargs.get('title_id')
-        author = self.context['request'].user
-
-        if Review.objects.filter(title=title_id, author=author).exists():
-            raise serializers.ValidationError("Вы уже оставили ревью для этой работы.")
-        
+        if Review.objects.filter(
+            title_id=self.context['view'].kwargs.get('title_id'),
+            author=self.context['request'].user
+        ).exists():
+            raise ValidationError('Вы уже оставляли ревью для этой работы.')
         return data
 
 
