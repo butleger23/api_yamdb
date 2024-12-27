@@ -2,13 +2,17 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from .validator import characters_validator
+
 
 YamdbUser = get_user_model()
 
 
 class Category(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
-    slug = models.SlugField(unique=True, max_length=50, verbose_name='Слаг')
+    slug = models.SlugField(
+        unique=True, max_length=50, verbose_name='Слаг',
+        validators=[characters_validator])
 
     class Meta:
         verbose_name = 'Категория'
@@ -35,15 +39,13 @@ class Title(models.Model):
     year = models.IntegerField(verbose_name='Год', null=True, blank=True)
     description = models.CharField(
         verbose_name='Описание', null=True, blank=True, max_length=256,
-    ),
-    genre = models.ForeignKey(
+    )
+    genre = models.ManyToManyField(
         Genre,
-        on_delete=models.SET_NULL,
         blank=True,
-        null=True,
         verbose_name='Жанр',
         related_name='titles'
-    ),
+    )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
