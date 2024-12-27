@@ -21,12 +21,8 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    category = serializers.SlugRelatedField(
-        slug_field='slug', queryset=Category.objects.all()
-    )
-    genre = serializers.SlugRelatedField(
-        slug_field='slug', queryset=Genre.objects.all(), many=True
-    )
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField()
 
     class Meta:
@@ -38,10 +34,17 @@ class TitleSerializer(serializers.ModelSerializer):
             raise ValidationError('Вы не можете указать год в будущем времени')
         return value
 
+    def validate_name(self, value):
+        print(value)
+        if len(value) > 256:
+            raise ValidationError(
+                'Название произведения не может быть длиннее 256 символов.'
+                )
+        return value
+
     def get_rating(self, obj):
         return round(
-            obj.reviews.aggregate(Avg('score')).get('score_avg', 0.0), 2
-        )
+            obj.reviews.aggregate(Avg('score')).get('score_avg', None) or 0.0, 2)
         # also to test this: return obj.reviews.aggregate('score')
 
         # reviews = obj.reviews.all()
