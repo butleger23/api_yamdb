@@ -16,7 +16,6 @@ router.register('titles', TitleViewSet, basename='title')
 router.register('users', UserViewSet, basename='users')
 title_router = NestedDefaultRouter(router, 'titles', lookup='title')
 title_router.register('reviews', ReviewViewSet, basename='title-reviews')
-
 review_router = NestedDefaultRouter(title_router, 'reviews', lookup='review')
 review_router.register(
     'comments',
@@ -24,9 +23,7 @@ review_router.register(
     basename='title-review-comments'
 )
 
-
 api_version_prefix = 'v1/'
-
 
 urlpatterns = [
     path(api_version_prefix, include([
