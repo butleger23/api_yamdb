@@ -14,10 +14,8 @@ router.register('categories', CategoryViewSet, basename='categories')
 router.register('genres', GenreViewSet, basename='genres')
 router.register('titles', TitleViewSet, basename='title')
 router.register('users', UserViewSet, basename='users')
-
 title_router = NestedDefaultRouter(router, 'titles', lookup='title')
 title_router.register('reviews', ReviewViewSet, basename='title-reviews')
-
 review_router = NestedDefaultRouter(title_router, 'reviews', lookup='review')
 review_router.register(
     'comments',

@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, exceptions, filters
+from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Genre, Title, Review
@@ -14,9 +14,6 @@ from .filters import TitleFilter
 
 class Crud5ViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
-
-    # def update(self, request, *args, **kwargs):
-    #     raise exceptions.MethodNotAllowed('PUT')
 
 
 class CategoryViewSet(ListDeleteCreateViewSet):
