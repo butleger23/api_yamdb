@@ -1,5 +1,4 @@
-from rest_framework import mixins, viewsets
-from rest_framework import generics
+from rest_framework import mixins, viewsets, generics
 
 
 class ListDeleteCreateViewSet(
