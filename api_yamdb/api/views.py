@@ -71,7 +71,9 @@ class ReviewViewSet(Crud5ViewSet):
     def create(self, request, *args, **kwargs):
         title = self.get_title()
         if Review.objects.filter(title=title, author=request.user).exists():
-            raise serializers.ValidationError('Вы уже оставляли ревью для этой работы.')
+            raise serializers.ValidationError(
+                'Вы уже оставляли ревью для этой работы.'
+            )
         return super().create(request, *args, **kwargs)
 
 
