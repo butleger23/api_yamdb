@@ -100,6 +100,9 @@ class Review(models.Model):
         if not (1 <= self.score <= 10):
             raise ValidationError('Рейтинг должен быть от 1 до 10!')
 
+        if Review.objects.filter(title=self.title, author=self.author).exists():
+            raise ValidationError('Вы уже оставляли ревью для этой работы.')
+
 
 class Comment(models.Model):
     text = models.TextField(verbose_name='Текст')

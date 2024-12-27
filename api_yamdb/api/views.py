@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, exceptions, filters
+from rest_framework import viewsets, filters, serializers
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Genre, Title, Review
@@ -14,9 +14,6 @@ from .filters import TitleFilter
 
 class Crud5ViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
-
-    def update(self, request, *args, **kwargs):
-        raise exceptions.MethodNotAllowed('PUT')
 
 
 class CategoryViewSet(ListDeleteCreateViewSet):
@@ -63,13 +60,19 @@ class ReviewViewSet(Crud5ViewSet):
     permission_classes = [IsAuthorOrModeratorOrReadOnly,]
 
     def get_title(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        return get_object_or_404(Title, pk=self.kwargs.get('title_pk'))
 
     def get_queryset(self):
-        return self.get_title.reviews.all()
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
+
+    def create(self, request, *args, **kwargs):
+        title = self.get_title()
+        if Review.objects.filter(title=title, author=request.user).exists():
+            raise serializers.ValidationError('Вы уже оставляли ревью для этой работы.')
+        return super().create(request, *args, **kwargs)
 
 
 class CommentViewSet(Crud5ViewSet):
@@ -77,10 +80,10 @@ class CommentViewSet(Crud5ViewSet):
     permission_classes = [IsAuthorOrModeratorOrReadOnly,]
 
     def get_review(self):
-        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        return get_object_or_404(Review, pk=self.kwargs.get('review_pk'))
 
     def get_queryset(self):
-        return self.get_review.comments.all()
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
