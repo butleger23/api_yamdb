@@ -9,7 +9,7 @@ from .serializers import (
     CategorySerializer, GenreSerializer, TitleSerializer, ReviewSerializer,
     CommentSerializer
 )
-from .permissions import IsAdminOrReadOnly, AuthorOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsAuthorOrModeratorOrReadOnly
 from .filters import TitleFilter
 
 
@@ -43,7 +43,7 @@ class Crud5ViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(Crud5ViewSet):
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = [AuthorOrReadOnly,]
+    permission_classes = [IsAuthorOrModeratorOrReadOnly,]
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -57,7 +57,7 @@ class ReviewViewSet(Crud5ViewSet):
 
 class CommentViewSet(Crud5ViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [AuthorOrReadOnly,]
+    permission_classes = [IsAuthorOrModeratorOrReadOnly,]
 
     def get_review(self):
         return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
