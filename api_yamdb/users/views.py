@@ -3,8 +3,9 @@ import os
 from django.contrib.auth import get_user_model, tokens
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
+from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -22,6 +23,8 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     lookup_field = 'username'
     permission_classes = (IsAdmin,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ('username',)
 
     @action(
         detail=False,
