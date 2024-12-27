@@ -63,7 +63,7 @@ class ReviewViewSet(Crud5ViewSet):
         return get_object_or_404(Title, pk=self.kwargs.get('title_pk'))
 
     def get_queryset(self):
-        return self.get_title().reviews.all().order_by('-pub_date')
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
@@ -85,7 +85,7 @@ class CommentViewSet(Crud5ViewSet):
         return get_object_or_404(Review, pk=self.kwargs.get('review_pk'))
 
     def get_queryset(self):
-        return self.get_review().comments.all().order_by('-pub_date')
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
