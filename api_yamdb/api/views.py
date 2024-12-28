@@ -1,44 +1,36 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, filters, serializers
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import serializers
 
-from reviews.models import Category, Genre, Title, Review
-from .viewsets import ListDeleteCreateViewSet
-from .serializers import (
-    CategorySerializer, GenreSerializer, TitleSerializer, ReviewSerializer,
-    CommentSerializer
+from api.filters import TitleFilter
+from api.permissions import IsAdminOrReadOnly, IsAuthorOrModeratorOrReadOnly
+from api.serializers import (
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    ReviewSerializer,
+    TitleSerializer,
 )
-from .permissions import IsAdminOrReadOnly, IsAuthorOrModeratorOrReadOnly
-from .filters import TitleFilter
+from api.viewsets import ListDeleteCreateGenreCategoryViewSet, NoPutViewSet
+from reviews.models import Category, Genre, Review, Title
 
 
-class Crud5ViewSet(viewsets.ModelViewSet):
-    http_method_names = ['get', 'post', 'patch', 'delete']
-
-
-class CategoryViewSet(ListDeleteCreateViewSet):
-    queryset = Category.objects.all().order_by('id')
+class CategoryViewSet(ListDeleteCreateGenreCategoryViewSet):
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAdminOrReadOnly,]
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('name',)
-    lookup_field = 'slug'
 
 
-class GenreViewSet(ListDeleteCreateViewSet):
-    queryset = Genre.objects.all().order_by('id')
+class GenreViewSet(ListDeleteCreateGenreCategoryViewSet):
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [IsAdminOrReadOnly,]
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('name',)
-    lookup_field = 'slug'
 
 
-class TitleViewSet(viewsets.ModelViewSet):
-    http_method_names = ['get', 'post', 'patch', 'delete']
-    queryset = Title.objects.all().order_by('id')
+class TitleViewSet(NoPutViewSet):
+    queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = [IsAdminOrReadOnly,]
+    permission_classes = [
+        IsAdminOrReadOnly,
+    ]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
@@ -55,9 +47,11 @@ class TitleViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
 
 
-class ReviewViewSet(Crud5ViewSet):
+class ReviewViewSet(NoPutViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthorOrModeratorOrReadOnly,]
+    permission_classes = [
+        IsAuthorOrModeratorOrReadOnly,
+    ]
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_pk'))
@@ -77,9 +71,11 @@ class ReviewViewSet(Crud5ViewSet):
         return super().create(request, *args, **kwargs)
 
 
-class CommentViewSet(Crud5ViewSet):
+class CommentViewSet(NoPutViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthorOrModeratorOrReadOnly,]
+    permission_classes = [
+        IsAuthorOrModeratorOrReadOnly,
+    ]
 
     def get_review(self):
         return get_object_or_404(Review, pk=self.kwargs.get('review_pk'))

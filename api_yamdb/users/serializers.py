@@ -1,4 +1,5 @@
 import re
+
 from django.contrib.auth import get_user_model
 from dotenv import load_dotenv
 from rest_framework import serializers
@@ -39,6 +40,7 @@ class SignupSerializer(serializers.Serializer):
         return User.objects.create(**validated_data)
 
     def validate_username(self, value):
-        if value == 'me' or not re.fullmatch(r'^[\w.@+-]+\Z', value): # вынести regexp
+        USERNAME_REGEXP = re.compile(r'^[\w.@+-]+\Z')
+        if value == 'me' or not re.fullmatch(USERNAME_REGEXP, value):
             raise serializers.ValidationError('Нельзя выбрать данный username')
         return value

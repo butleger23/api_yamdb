@@ -1,12 +1,15 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested.routers import NestedDefaultRouter
 
 from api.views import (
-    TitleViewSet, ReviewViewSet, CommentViewSet,
-    CategoryViewSet, GenreViewSet
+    CategoryViewSet,
+    CommentViewSet,
+    GenreViewSet,
+    ReviewViewSet,
+    TitleViewSet,
 )
-from users.views import UserViewSet, token, signup
+from users.views import UserViewSet, signup, token
 
 
 router = DefaultRouter()
@@ -18,9 +21,7 @@ title_router = NestedDefaultRouter(router, 'titles', lookup='title')
 title_router.register('reviews', ReviewViewSet, basename='title-reviews')
 review_router = NestedDefaultRouter(title_router, 'reviews', lookup='review')
 review_router.register(
-    'comments',
-    CommentViewSet,
-    basename='title-review-comments'
+    'comments', CommentViewSet, basename='title-review-comments'
 )
 
 api_version_prefix = 'v1/'

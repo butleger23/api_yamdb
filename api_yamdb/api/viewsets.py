@@ -1,8 +1,19 @@
-from rest_framework import mixins, viewsets
+from rest_framework import filters, mixins, viewsets
+
+from api.permissions import IsAdminOrReadOnly
 
 
-class ListDeleteCreateViewSet(
+class ListDeleteCreateGenreCategoryViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
-    pass
+    permission_classes = [
+        IsAdminOrReadOnly,
+    ]
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+
+
+class NoPutViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']

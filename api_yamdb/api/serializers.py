@@ -1,20 +1,18 @@
-from django.db.models import Avg
-from rest_framework import serializers
-from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.db.models import Avg
+from django.utils import timezone
+from rest_framework import serializers
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         exclude = ['id']
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         exclude = ['id']
         model = Genre
