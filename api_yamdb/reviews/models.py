@@ -44,7 +44,8 @@ class Title(models.Model):
         Genre,
         blank=True,
         verbose_name='Жанр',
-        related_name='titles'
+        related_name='titles',
+        through='GenreTitle'
     )
     category = models.ForeignKey(
         Category,
@@ -61,6 +62,29 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class GenreTitle(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='genre_titles',
+        verbose_name='Произведение'
+    )
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        related_name='genre_titles',
+        verbose_name='Жанр'
+    )
+
+    class Meta:
+        verbose_name = 'Жанр произведения'
+        verbose_name_plural = 'Жанры произведений'
+        unique_together = ('title', 'genre')
+
+    def __str__(self):
+        return f"{self.title.name} - {self.genre.name}"
 
 
 class Review(models.Model):
