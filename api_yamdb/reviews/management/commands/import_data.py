@@ -43,27 +43,28 @@ TASKS = [
         'category': (Category, 'id')
     }),
 
-    ('genre_title.csv', GenreTitle, None, {
-        'title': (Title, 'id'),
-        'genre': (Genre, 'id')
-    }),
+    ('genre_title.csv', GenreTitle, {
+        'id': int,
+        'title_id': int,
+        'genre_id': int
+    }, None),
 
     ('review.csv', Review, {
         'id': int,
         'text': str,
         'score': int,
-        'pub_date': parse_datetime
+        'pub_date': parse_datetime,
+        'title_id': int,
     }, {
-        'title': (Title, 'id'),
         'author': (YamdbUser, 'id')
     }),
 
     ('comments.csv', Comment, {
         'id': int,
         'text': str,
-        'pub_date': parse_datetime
+        'pub_date': parse_datetime,
+        'review_id': int,
     }, {
-        'review': (Review, 'id'),
         'author': (YamdbUser, 'id')
     }),
 ]
