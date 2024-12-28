@@ -1,9 +1,10 @@
 import csv
+
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils.dateparse import parse_datetime
 
-from reviews.models import Review, Comment
+from reviews.models import Comment, Review
 
 
 YamdbUser = get_user_model()
