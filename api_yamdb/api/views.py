@@ -11,16 +11,16 @@ from api.serializers import (
     ReviewSerializer,
     TitleSerializer,
 )
-from api.viewsets import ListDeleteCreateGenreCategoryViewSet, NoPutViewSet
+from api.viewsets import ListDestroyCreateGenreCategoryViewSet, NoPutViewSet
 from reviews.models import Category, Genre, Review, Title
 
 
-class CategoryViewSet(ListDeleteCreateGenreCategoryViewSet):
+class CategoryViewSet(ListDestroyCreateGenreCategoryViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenreViewSet(ListDeleteCreateGenreCategoryViewSet):
+class GenreViewSet(ListDestroyCreateGenreCategoryViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
