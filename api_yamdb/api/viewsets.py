@@ -3,7 +3,7 @@ from rest_framework import filters, mixins, viewsets
 from api.permissions import IsAdminOrReadOnly
 
 
-class ListDeleteCreateGenreCategoryViewSet(
+class ListDestroyCreateGenreCategoryViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
