@@ -20,7 +20,7 @@ User = get_user_model()
 
 class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
-    queryset = User.objects.all()
+    queryset = User.objects.all().order_by('id')
     serializer_class = UserSerializer
     lookup_field = 'username'
     permission_classes = (IsAdmin,)

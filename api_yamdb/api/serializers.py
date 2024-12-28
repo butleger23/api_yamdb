@@ -47,13 +47,6 @@ class TitleSerializer(serializers.ModelSerializer):
             return None
         average_score = reviews.aggregate(Avg('score')).get('score__avg', None)
         return round(average_score, 2) if average_score is not None else None
-    
-    # У меня к сож не проходит пайтест:
-    # def get_rating(self, obj):
-    #     if not obj.reviews.count():
-    #         return None
-    #     return round(
-    #         obj.reviews.aggregate(Avg('score')).get('score_avg', None), 2)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
