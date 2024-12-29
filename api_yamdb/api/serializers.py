@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -19,7 +18,7 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField()
@@ -27,6 +26,25 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
+
+    def get_rating(self, obj):
+        reviews = obj.reviews.all()
+        if not reviews.exists():
+            return None
+        average_score = reviews.aggregate(Avg('score')).get('score__avg', None)
+        return round(average_score, 2) if average_score is not None else None
+
+
+class TitleWriteSerializer(TitleReadSerializer):
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True
+    )
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug',
+    )
 
     def validate_year(self, value):
         if value > timezone.now().year:
@@ -39,45 +57,6 @@ class TitleSerializer(serializers.ModelSerializer):
                 'Название произведения не может быть длиннее 256 символов.'
             )
         return value
-
-    def get_rating(self, obj):
-        reviews = obj.reviews.all()
-        if not reviews.exists():
-            return None
-        average_score = reviews.aggregate(Avg('score')).get('score__avg', None)
-        return round(average_score, 2) if average_score is not None else None
-
-    def create(self, validated_data):
-        if self.initial_data is dict:
-            genre_data = self.initial_data.get('genre')
-        else:
-            genre_data = self.initial_data.getlist('genre')
-        genres = Genre.objects.filter(slug__in=genre_data)
-        category = self.initial_data.get('category')
-        if not Category.objects.filter(slug=category).exists():
-            raise ValidationError('No such category')
-        category_object = get_object_or_404(Category, slug=category)
-
-        title = Title.objects.create(
-            category=category_object, **validated_data
-        )
-        title.genre.set(genres)
-        return title
-
-    def update(self, instance, validated_data):
-        if 'genre' in self.initial_data:
-            genre_data = self.initial_data.get('genre')
-            genres = Genre.objects.filter(slug__in=genre_data)
-            instance.genres.clear()
-            instance.genres.set(genres)
-
-        if 'category' in self.initial_data:
-            category = self.initial_data.get('category')
-            if not Category.objects.filter(slug=category).exists():
-                raise ValidationError('no such category')
-            category_object = get_object_or_404(Category, slug=category)
-            instance.category = category_object
-        return super().update(instance, validated_data)
 
 
 class ReviewSerializer(serializers.ModelSerializer):

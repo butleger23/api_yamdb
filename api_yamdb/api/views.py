@@ -9,7 +9,8 @@ from api.serializers import (
     CommentSerializer,
     GenreSerializer,
     ReviewSerializer,
-    TitleSerializer,
+    TitleWriteSerializer,
+    TitleReadSerializer
 )
 from api.viewsets import ListDestroyCreateGenreCategoryViewSet, NoPutViewSet
 from reviews.models import Category, Genre, Review, Title
@@ -27,12 +28,16 @@ class GenreViewSet(ListDestroyCreateGenreCategoryViewSet):
 
 class TitleViewSet(NoPutViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
     permission_classes = [
         IsAdminOrReadOnly,
     ]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
 class ReviewViewSet(NoPutViewSet):
