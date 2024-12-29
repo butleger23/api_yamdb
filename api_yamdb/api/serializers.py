@@ -28,6 +28,8 @@ class TitleSerializer(serializers.ModelSerializer):
         model = Title
 
     def validate_year(self, value):
+        if not isinstance(value, int) or value < 0:
+            raise ValidationError('Год должен быть целым положительным числом')
         if value > timezone.now().year:
             raise ValidationError('Вы не можете указать год в будущем времени')
         return value
@@ -45,6 +47,13 @@ class TitleSerializer(serializers.ModelSerializer):
             return None
         average_score = reviews.aggregate(Avg('score')).get('score__avg', None)
         return round(average_score, 2) if average_score is not None else None
+
+    def create(self, validated_data):
+        genre_data = validated_data.pop('genre')
+        title = Title.objects.create(**validated_data)
+        title.genre.set(genre_data)
+        
+        return title
 
 
 class ReviewSerializer(serializers.ModelSerializer):

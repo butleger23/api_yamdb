@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import serializers
+from rest_framework import serializers, permissions
 
 from api.filters import TitleFilter
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrModeratorOrReadOnly
@@ -28,23 +28,30 @@ class GenreViewSet(ListDestroyCreateGenreCategoryViewSet):
 class TitleViewSet(NoPutViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = [
-        IsAdminOrReadOnly,
-    ]
+    permission_classes = [IsAdminOrReadOnly,]
+    # permission_classes = [permissions.AllowAny,]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
     def perform_create(self, serializer):
-        category = get_object_or_404(
-            Category, slug=self.request.data.get('category')
-        )
-        genre = Genre.objects.filter(
-            slug__in=self.request.data.getlist('genre')
-        )
-        serializer.save(category=category, genre=genre)
+        genre_slugs = self.request.data.get('genre', [])
+        genres = Genre.objects.filter(slug__in=genre_slugs)
+        serializer.save(genre=genres)
 
     def perform_update(self, serializer):
-        self.perform_create(serializer)
+        validated_data = serializer.validated_data
+        if 'category' in validated_data:
+            category_slug = validated_data.pop('category')
+            category = Category.objects.get(slug=category_slug)
+            instance = serializer.instance
+            instance.category = category
+        
+        if 'genre' in validated_data:
+            genre_slugs = validated_data.pop('genre')
+            genres = Genre.objects.filter(slug__in=genre_slugs)
+            instance.genre.set(genres)
+        
+        serializer.save()
 
 
 class ReviewViewSet(NoPutViewSet):
