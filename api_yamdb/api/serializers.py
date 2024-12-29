@@ -1,9 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import serializers
+from django.http import QueryDict
+from rest_framework import serializers, status
+from rest_framework.response import Response
 
-from reviews.models import Category, Comment, Genre, Review, Title
+from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -45,6 +48,36 @@ class TitleSerializer(serializers.ModelSerializer):
             return None
         average_score = reviews.aggregate(Avg('score')).get('score__avg', None)
         return round(average_score, 2) if average_score is not None else None
+
+    def create(self, validated_data):
+        if type(self.initial_data) == dict:
+            genre_data = self.initial_data.get('genre')
+        else:
+            genre_data = self.initial_data.getlist('genre')
+        genres = Genre.objects.filter(slug__in=genre_data)
+        category = self.initial_data.get('category')
+        if not Category.objects.filter(slug=category).exists():
+            raise ValidationError('no such category')
+        category_object = get_object_or_404(Category, slug=category)
+
+        title = Title.objects.create(category=category_object, **validated_data)
+        title.genre.set(genres)
+        return title
+
+    def update(self, instance, validated_data):
+        if 'genre' in self.initial_data:
+            genre_data = self.initial_data.get('genre')
+            genres = Genre.objects.filter(slug__in=genre_data)
+            instance.genres.clear()
+            instance.genres.set(genres)
+
+        if 'category' in self.initial_data:
+            category = self.initial_data.get('category')
+            if not Category.objects.filter(slug=category).exists():
+                raise ValidationError('no such category')
+            category_object = get_object_or_404(Category, slug=category)
+            instance.category = category_object
+        return super().update(instance, validated_data)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
