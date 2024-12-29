@@ -49,25 +49,35 @@ class TitleSerializer(serializers.ModelSerializer):
         average_score = reviews.aggregate(Avg('score')).get('score__avg', None)
         return round(average_score, 2) if average_score is not None else None
 
-
     def create(self, validated_data):
         if type(self.initial_data) == dict:
             genre_data = self.initial_data.get('genre')
         else:
             genre_data = self.initial_data.getlist('genre')
-
+        genres = Genre.objects.filter(slug__in=genre_data)
         category = self.initial_data.get('category')
         if not Category.objects.filter(slug=category).exists():
             raise ValidationError('no such category')
         category_object = get_object_or_404(Category, slug=category)
 
         title = Title.objects.create(category=category_object, **validated_data)
-        for genre_slug in genre_data:
-            if not Genre.objects.filter(slug=genre_slug).exists():
-                raise ValidationError('no such genre')
-            genre = get_object_or_404(Genre, slug=genre_slug)
-            GenreTitle.objects.create(title=title, genre=genre)
+        title.genre.set(genres)
         return title
+
+    def update(self, instance, validated_data):
+        if 'genre' in self.initial_data:
+            genre_data = self.initial_data.get('genre')
+            genres = Genre.objects.filter(slug__in=genre_data)
+            instance.genres.clear()
+            instance.genres.set(genres)
+
+        if 'category' in self.initial_data:
+            category = self.initial_data.get('category')
+            if not Category.objects.filter(slug=category).exists():
+                raise ValidationError('no such category')
+            category_object = get_object_or_404(Category, slug=category)
+            instance.category = category_object
+        return super().update(instance, validated_data)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
