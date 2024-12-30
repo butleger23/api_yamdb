@@ -1,9 +1,16 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
 from django.utils import timezone
 from rest_framework import serializers
 
+from users.constants import MAX_USERNAME_LENGTH
+from users.validators import validate_username_me
 from reviews.models import Category, Comment, Genre, Review, Title
+
+
+User = get_user_model()
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -87,16 +94,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         exclude = ('title',)
 
-    def validate_score(self, value):
-        if not isinstance(value, int):
-            raise serializers.ValidationError('Должно быть целое число!')
-        if not (1 <= value <= 10):
-            raise serializers.ValidationError('Рейтинг должен быть от 1 до 10')
-        return value
-
     def validate(self, data):
-        if Review.objects.filter(
-            title_id=self.context['view'].kwargs.get('title_id'),
+        title_id = self.context['view'].kwargs.get('title_pk')
+        is_update = self.instance is not None
+        if not is_update and Review.objects.filter(
+            title_id=title_id,
             author=self.context['request'].user,
         ).exists():
             raise ValidationError('Вы уже оставляли ревью для этой работы.')
@@ -111,3 +113,57 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         exclude = ('review',)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+        model = User
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=MAX_USERNAME_LENGTH)
+    confirmation_code = serializers.SlugField()
+
+
+class SignupSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        max_length=MAX_USERNAME_LENGTH,
+        validators=[validate_username_me, UnicodeUsernameValidator()],
+    )
+    email = serializers.EmailField(max_length=254)
+
+    def validate(self, data):
+        error_msg = {}
+        user_with_provided_username = User.objects.filter(
+            username=data['username']
+        ).first()
+        user_with_provided_email = User.objects.filter(
+            email=data['email']
+        ).first()
+        if not user_with_provided_username and not user_with_provided_email:
+            pass
+        elif user_with_provided_username == user_with_provided_email:
+            pass
+        elif user_with_provided_username and user_with_provided_email:
+            error_msg['username'] = [
+                'Пользователь с таким username уже существует.'
+            ]
+            error_msg['email'] = ['Пользователь с таким email уже существует.']
+        elif user_with_provided_email:
+            error_msg['email'] = ['Пользователь с таким email уже существует.']
+        else:
+            error_msg['username'] = [
+                'Пользователь с таким username уже существует.'
+            ]
+
+        if error_msg:
+            raise ValidationError(error_msg)
+        return data

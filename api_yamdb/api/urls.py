@@ -8,8 +8,10 @@ from api.views import (
     GenreViewSet,
     ReviewViewSet,
     TitleViewSet,
+    UserViewSet,
+    signup,
+    token,
 )
-from users.views import UserViewSet, signup, token
 
 
 router = DefaultRouter()
