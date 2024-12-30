@@ -18,8 +18,6 @@
 
 [DRF nested routers](https://github.com/alanjds/drf-nested-routers)
 
-[python-dotenv](https://pypi.org/project/python-dotenv/)
-
 ### Как запустить проект:
 
 Клонировать репозиторий и перейти в него в командной строке:
