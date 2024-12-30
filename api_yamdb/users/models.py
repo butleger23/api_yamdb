@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
-from users.constants import MAX_USER_ROLE_LENGTH, MAX_USERNAME_LENGTH
+from users.constants import MAX_USERNAME_LENGTH, MAX_USER_ROLE_LENGTH
 from users.validators import validate_forbidden_username
 
 

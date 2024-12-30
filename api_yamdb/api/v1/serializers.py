@@ -3,9 +3,9 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 from users.validators import validate_forbidden_username
-from reviews.models import Category, Comment, Genre, Review, Title
 
 
 User = get_user_model()
