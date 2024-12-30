@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import serializers
+from rest_framework import permissions
+
 
 from api.filters import TitleFilter
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrModeratorOrReadOnly
@@ -55,14 +56,6 @@ class ReviewViewSet(NoPutViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
 
-    def create(self, request, *args, **kwargs):
-        title = self.get_title()
-        if Review.objects.filter(title=title, author=request.user).exists():
-            raise serializers.ValidationError(
-                'Вы уже оставляли ревью для этой работы.'
-            )
-        return super().create(request, *args, **kwargs)
-
 
 class CommentViewSet(NoPutViewSet):
     serializer_class = CommentSerializer
@@ -70,8 +63,12 @@ class CommentViewSet(NoPutViewSet):
         IsAuthorOrModeratorOrReadOnly,
     ]
 
+    def get_title(self):
+        return get_object_or_404(Title, pk=self.kwargs.get('title_pk'))
+
     def get_review(self):
-        return get_object_or_404(Review, pk=self.kwargs.get('review_pk'))
+        return get_object_or_404(
+            Review, pk=self.kwargs.get('review_pk'), title=self.get_title())
 
     def get_queryset(self):
         return self.get_review().comments.all()

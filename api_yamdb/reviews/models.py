@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from .validator import characters_validator
@@ -85,6 +86,7 @@ class GenreTitle(models.Model):
         verbose_name = 'Жанр произведения'
         verbose_name_plural = 'Жанры произведений'
         unique_together = ('title', 'genre')
+        # ordering? 
 
     def __str__(self):
         return f"{self.title.name} - {self.genre.name}"
@@ -104,7 +106,10 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Автор'
     )
-    score = models.IntegerField(verbose_name='Рейтинг')
+    score = models.IntegerField(
+        verbose_name='Рейтинг',
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
     pub_date = models.DateTimeField(
         auto_now=True,
         verbose_name='Дата ревью'
@@ -123,15 +128,6 @@ class Review(models.Model):
 
     def __str__(self):
         return self.text
-
-    def clean(self):
-        if not (1 <= self.score <= 10):
-            raise ValidationError('Рейтинг должен быть от 1 до 10!')
-
-        if Review.objects.filter(
-            title=self.title, author=self.author
-        ).exists():
-            raise ValidationError('Вы уже оставляли ревью для этой работы.')
 
 
 class Comment(models.Model):

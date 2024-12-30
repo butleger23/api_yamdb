@@ -68,16 +68,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         exclude = ('title',)
 
-    def validate_score(self, value):
-        if not isinstance(value, int):
-            raise serializers.ValidationError('Должно быть целое число!')
-        if not (1 <= value <= 10):
-            raise serializers.ValidationError('Рейтинг должен быть от 1 до 10')
-        return value
-
     def validate(self, data):
-        if Review.objects.filter(
-            title_id=self.context['view'].kwargs.get('title_id'),
+        title_id = self.context['view'].kwargs.get('title_pk')
+        is_update = self.instance is not None
+        if not is_update and Review.objects.filter(
+            title_id=title_id,
             author=self.context['request'].user,
         ).exists():
             raise ValidationError('Вы уже оставляли ревью для этой работы.')
