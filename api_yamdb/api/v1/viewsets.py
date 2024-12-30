@@ -1,6 +1,6 @@
 from rest_framework import filters, mixins, viewsets
 
-from api.permissions import IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly
 
 
 class ListDestroyCreateGenreCategoryViewSet(
