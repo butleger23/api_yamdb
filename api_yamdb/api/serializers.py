@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
-from django.utils import timezone
 from rest_framework import serializers
 
 from users.constants import MAX_USERNAME_LENGTH

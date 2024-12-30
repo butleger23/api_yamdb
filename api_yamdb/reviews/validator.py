@@ -1,6 +1,5 @@
 from django.utils import timezone
 
-from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 
 
