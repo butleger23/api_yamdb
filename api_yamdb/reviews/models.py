@@ -18,7 +18,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return f"Category: {self.name} (Slug: {self.slug})"
@@ -31,7 +31,7 @@ class Genre(models.Model):
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return f"Genre: {self.name} (Slug: {self.slug})"
@@ -42,7 +42,7 @@ class Title(models.Model):
     year = models.SmallIntegerField(
         verbose_name='Год',
         null=True, blank=True,
-        validators=[year_validator],
+        validators=(year_validator,),
     )
     description = models.TextField(
         verbose_name='Описание', null=True, blank=True,
@@ -66,7 +66,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return f"Title: {self.name} (Year: {self.year})"
@@ -89,10 +89,11 @@ class GenreTitle(models.Model):
     class Meta:
         verbose_name = 'Жанр произведения'
         verbose_name_plural = 'Жанры произведений'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['title', 'genre'], name='unique_title')
-        ]
+                fields=('title', 'genre'), name='unique_title'
+            ),
+        )
 
     def __str__(self):
         return f"{self.title.name} - {self.genre.name}"
@@ -114,7 +115,7 @@ class Review(models.Model):
     )
     score = models.IntegerField(
         verbose_name='Рейтинг',
-        validators=[MinValueValidator(1), MaxValueValidator(10)]
+        validators=(MinValueValidator(1), MaxValueValidator(10))
     )
     pub_date = models.DateTimeField(
         auto_now=True,
@@ -122,12 +123,12 @@ class Review(models.Model):
     )
 
     class Meta:
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['title', 'author'],
+                fields=('title', 'author'),
                 name='unique_review_per_author_per_title'
-            )
-        ]
+            ),
+        )
         verbose_name = 'Ревью'
         verbose_name_plural = 'Ревью'
         ordering = ('-pub_date',)
