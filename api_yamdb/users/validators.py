@@ -1,6 +1,8 @@
 from django.core.exceptions import ValidationError
 
+from .constants import FORBIDDEN_USERNAMES
 
-def validate_username_me(value):
-    if value == 'me':
-        raise ValidationError('Cannot use "me" as a username')
+
+def validate_forbidden_username(value):
+    if value in FORBIDDEN_USERNAMES:
+        raise ValidationError(f'Cannot use {value} as a username')

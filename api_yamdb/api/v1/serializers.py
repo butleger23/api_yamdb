@@ -1,11 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
-
 from rest_framework import serializers
 
-from users.constants import MAX_USERNAME_LENGTH
-from users.validators import validate_username_me
+from users.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
+from users.validators import validate_forbidden_username
 from reviews.models import Category, Comment, Genre, Review, Title
 
 
@@ -14,13 +13,13 @@ User = get_user_model()
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('name', 'slug')
+        fields = ("name", "slug")
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('name', 'slug')
+        fields = ("name", "slug")
         model = Genre
 
 
@@ -31,34 +30,41 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+            "id",
+            "name",
+            "year",
+            "rating",
+            "description",
+            "genre",
+            "category",
         )
         model = Title
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        if isinstance(representation['genre'], list):
-            representation['genre'] = [
+        if isinstance(representation["genre"], list):
+            representation["genre"] = [
                 {
-                    'name': (
-                        genre['name'] if isinstance(genre, dict) else genre
+                    "name": (
+                        genre["name"] if isinstance(genre, dict) else genre
                     ),
-                    'slug': (
-                        genre['slug'] if isinstance(genre, dict) else genre
-                    )
-                } for genre in representation['genre']
+                    "slug": (
+                        genre["slug"] if isinstance(genre, dict) else genre
+                    ),
+                }
+                for genre in representation["genre"]
             ]
         else:
             raise ValueError("Expected 'genre' to be a list of dictionaries.")
 
-        if isinstance(representation['category'], dict):
-            representation['category'] = {
-                'name': representation['category']['name'],
-                'slug': representation['category']['slug']
+        if isinstance(representation["category"], dict):
+            representation["category"] = {
+                "name": representation["category"]["name"],
+                "slug": representation["category"]["slug"],
             }
         else:
-            representation['category'] = {'name': None, 'slug': None}
+            representation["category"] = {"name": None, "slug": None}
 
         return representation
 
@@ -66,95 +72,94 @@ class TitleReadSerializer(serializers.ModelSerializer):
 class TitleWriteSerializer(TitleReadSerializer):
     genre = serializers.SlugRelatedField(
         queryset=Genre.objects.all(),
-        slug_field='slug',
+        slug_field="slug",
         many=True,
         allow_null=True,
-        allow_empty=True
+        allow_empty=True,
     )
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(),
-        slug_field='slug',
+        slug_field="slug",
     )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username'
+        read_only=True, slug_field="username"
     )
 
     class Meta:
         model = Review
-        exclude = ('title',)
+        exclude = ("title",)
 
     def validate(self, data):
-        title_id = self.context['view'].kwargs.get('title_pk')
+        title_id = self.context["view"].kwargs.get("title_pk")
         is_update = self.instance is not None
-        if not is_update and Review.objects.filter(
-            title_id=title_id,
-            author=self.context['request'].user,
-        ).exists():
-            raise ValidationError('Вы уже оставляли ревью для этой работы.')
+        if (
+            not is_update
+            and Review.objects.filter(
+                title_id=title_id,
+                author=self.context["request"].user,
+            ).exists()
+        ):
+            raise ValidationError("Вы уже оставляли ревью для этой работы.")
         return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username'
+        read_only=True, slug_field="username"
     )
 
     class Meta:
         model = Comment
-        exclude = ('review',)
+        exclude = ("review",)
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (
-            'username',
-            'email',
-            'first_name',
-            'last_name',
-            'bio',
-            'role',
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "bio",
+            "role",
         )
         model = User
 
 
 class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=MAX_USERNAME_LENGTH)
+    username = serializers.CharField(
+        max_length=MAX_USERNAME_LENGTH,
+        validators=(UnicodeUsernameValidator(), validate_forbidden_username),
+    )
     confirmation_code = serializers.SlugField()
 
 
 class SignupSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=MAX_USERNAME_LENGTH,
-        validators=[validate_username_me, UnicodeUsernameValidator()],
+        validators=[validate_forbidden_username, UnicodeUsernameValidator()],
     )
-    email = serializers.EmailField(max_length=254)
+    email = serializers.EmailField(max_length=MAX_EMAIL_LENGTH)
 
     def validate(self, data):
         error_msg = {}
         user_with_provided_username = User.objects.filter(
-            username=data['username']
+            username=data["username"]
         ).first()
         user_with_provided_email = User.objects.filter(
-            email=data['email']
+            email=data["email"]
         ).first()
-        if not user_with_provided_username and not user_with_provided_email:
-            pass
-        elif user_with_provided_username == user_with_provided_email:
-            pass
-        elif user_with_provided_username and user_with_provided_email:
-            error_msg['username'] = [
-                'Пользователь с таким username уже существует.'
-            ]
-            error_msg['email'] = ['Пользователь с таким email уже существует.']
-        elif user_with_provided_email:
-            error_msg['email'] = ['Пользователь с таким email уже существует.']
-        else:
-            error_msg['username'] = [
-                'Пользователь с таким username уже существует.'
-            ]
+
+        if user_with_provided_email != user_with_provided_username:
+            if user_with_provided_email:
+                error_msg["email"] = ["Пользователь с таким email уже существует."]
+            if user_with_provided_username:
+                error_msg["username"] = [
+                    "Пользователь с таким username уже существует."
+                ]
 
         if error_msg:
             raise ValidationError(error_msg)

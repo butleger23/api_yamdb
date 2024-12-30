@@ -2,8 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
-from users.constants import MAX_USERNAME_LENGTH
-from users.validators import validate_username_me
+from users.constants import MAX_USER_ROLE_LENGTH, MAX_USERNAME_LENGTH
+from users.validators import validate_forbidden_username
 
 
 class YamdbUser(AbstractUser):
@@ -15,7 +15,7 @@ class YamdbUser(AbstractUser):
     username = models.CharField(
         max_length=MAX_USERNAME_LENGTH,
         unique=True,
-        validators=[UnicodeUsernameValidator(), validate_username_me],
+        validators=[UnicodeUsernameValidator(), validate_forbidden_username],
         error_messages={
             'unique': 'A user with that username already exists.',
         },
@@ -24,7 +24,7 @@ class YamdbUser(AbstractUser):
     role = models.CharField(
         'Роль',
         default=RoleChoices.USER,
-        max_length=50,
+        max_length=MAX_USER_ROLE_LENGTH,
         choices=RoleChoices.choices,
     )
     email = models.EmailField('Почта', unique=True)
