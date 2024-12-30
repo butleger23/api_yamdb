@@ -44,9 +44,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
 class TitleWriteSerializer(TitleReadSerializer):
     genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(),
-        slug_field='slug',
-        many=True
+        queryset=Genre.objects.all(), slug_field='slug', many=True
     )
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(),
@@ -113,6 +111,8 @@ class UserSerializer(serializers.ModelSerializer):
         )
         model = User
 
+    # Нужно сделать валидатор как в signupserializer
+
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=MAX_USERNAME_LENGTH)
@@ -128,3 +128,31 @@ class SignupSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         return User.objects.create(**validated_data)
+
+    def validate(self, data):
+        error_msg = {}
+        user_with_provided_username = User.objects.filter(
+            username=data['username']
+        ).first()
+        user_with_provided_email = User.objects.filter(
+            email=data['email']
+        ).first()
+        if not user_with_provided_username and not user_with_provided_email:
+            User.objects.create(**data)
+        elif user_with_provided_username == user_with_provided_email:
+            pass
+        elif user_with_provided_username and user_with_provided_email:
+            error_msg['username'] = [
+                'Пользователь с таким username уже существует.'
+            ]
+            error_msg['email'] = ['Пользователь с таким email уже существует.']
+        elif user_with_provided_email:
+            error_msg['email'] = ['Пользователь с таким email уже существует.']
+        else:
+            error_msg['username'] = [
+                'Пользователь с таким username уже существует.'
+            ]
+
+        if error_msg:
+            raise ValidationError(error_msg)
+        return data

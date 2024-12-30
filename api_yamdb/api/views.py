@@ -130,26 +130,7 @@ def signup(request):
     serializer = SignupSerializer(data=request.data)
 
     if serializer.is_valid(raise_exception=True):
-        user_with_provided_username = User.objects.filter(
-            username=request.data['username']
-        ).first()
-        user_with_provided_email = User.objects.filter(
-            email=request.data['email']
-        ).first()
-        if not user_with_provided_username and not user_with_provided_email:
-            user = serializer.save()
-        elif user_with_provided_username == user_with_provided_email:
-            user = user_with_provided_username
-        elif user_with_provided_username:
-            return Response(
-                'Юзер с таким username уже существует',
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        elif user_with_provided_email:
-            return Response(
-                'Юзер с таким email уже существует',
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        user = User.objects.get(username=request.data['username'])
 
         confirmation_code = tokens.default_token_generator.make_token(user)
         send_mail(
