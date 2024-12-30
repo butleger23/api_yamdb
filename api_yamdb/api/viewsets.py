@@ -7,9 +7,9 @@ class ListDestroyCreateGenreCategoryViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
-    permission_classes = [
+    permission_classes = (
         IsAdminOrReadOnly,
-    ]
+    )
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
