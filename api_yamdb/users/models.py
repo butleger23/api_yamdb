@@ -1,30 +1,44 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
-
-ROLE_CHOICES = (
-    ('user', 'user'),
-    ('moderator', 'moderator'),
-    ('admin', 'admin'),
-)
-
-LONGEST_ROLE_LENGTH = len('moderator')
+from users.constants import MAX_USERNAME_LENGTH
+from users.validators import validate_username_me
 
 
 class YamdbUser(AbstractUser):
+    class RoleChoices(models.TextChoices):
+        USER = ('user', 'user')
+        MODERATOR = ('moderator', 'moderator')
+        ADMIN = ('admin', 'admin')
+
+    username = models.CharField(
+        max_length=MAX_USERNAME_LENGTH,
+        unique=True,
+        validators=[UnicodeUsernameValidator(), validate_username_me],
+        error_messages={
+            'unique': 'A user with that username already exists.',
+        },
+    )
     bio = models.TextField('Биография', blank=True)
     role = models.CharField(
         'Роль',
-        default='user',
-        max_length=LONGEST_ROLE_LENGTH,
-        choices=ROLE_CHOICES,
+        default=RoleChoices.USER,
+        max_length=50,
+        choices=RoleChoices.choices,
     )
-    email = models.EmailField('Почта', max_length=254, unique=True)
+    email = models.EmailField('Почта', unique=True)
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ['id']
+        ordering = ['username']
 
     def __str__(self):
-        return self.username
+        return f'Пользователь - {self.username}'
+
+    def is_moderator(self):
+        return self.role == 'moderator'
+
+    def is_admin(self):
+        return self.is_superuser or self.role == 'admin'

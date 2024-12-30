@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from .validator import characters_validator
@@ -86,7 +85,6 @@ class GenreTitle(models.Model):
         verbose_name = 'Жанр произведения'
         verbose_name_plural = 'Жанры произведений'
         unique_together = ('title', 'genre')
-        # ordering? 
 
     def __str__(self):
         return f"{self.title.name} - {self.genre.name}"
