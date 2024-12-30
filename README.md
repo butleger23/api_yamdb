@@ -2,6 +2,24 @@
 
 Данный проект создает REST API для работы с YaMDB.
 
+### Авторы проекта:
+
+Данный проект был разработан Королевым Владимиром, Максименко Стефаном и Полывяным Артемом
+
+### Использованные технологии:
+
+В данном проекте используются данные технологии:
+
+[Django](https://www.djangoproject.com/)
+
+[Django rest framework](https://www.django-rest-framework.org/)
+
+[DRF SimpleJWT](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/)
+
+[DRF nested routers](https://github.com/alanjds/drf-nested-routers)
+
+[python-dotenv](https://pypi.org/project/python-dotenv/)
+
 ### Как запустить проект:
 
 Клонировать репозиторий и перейти в него в командной строке:
@@ -44,6 +62,18 @@ python3 manage.py migrate --run-syncdb
 
 ```
 python3 manage.py runserver
+```
+### Как наполнить датабазу из файлов csv:
+
+Находясь в api_final_yamdb/api_final_yamdb, выполнить команду:
+```
+python3 manage.py import_data
+```
+### Документация по API:
+
+После запуска проекта документацию можно найти по url:
+```
+http://127.0.0.1:8000/redoc/
 ```
 ### Для получения кода подтверждения по email:
 
