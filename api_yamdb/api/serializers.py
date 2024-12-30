@@ -111,8 +111,6 @@ class UserSerializer(serializers.ModelSerializer):
         )
         model = User
 
-    # Нужно сделать валидатор как в signupserializer
-
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=MAX_USERNAME_LENGTH)
@@ -125,9 +123,6 @@ class SignupSerializer(serializers.Serializer):
         validators=[validate_username_me, UnicodeUsernameValidator()],
     )
     email = serializers.EmailField(max_length=254)
-
-    # def create(self, validated_data):
-    #     return User.objects.create(**validated_data)
 
     def validate(self, data):
         error_msg = {}
