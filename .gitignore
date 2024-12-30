@@ -150,3 +150,6 @@ media/
 
 # ruff formatter
 pyproject.toml
+
+# sent emails
+sent_emails/
