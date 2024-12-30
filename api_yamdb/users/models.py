@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
+from users.constants import MAX_USERNAME_LENGTH
 from users.validators import validate_username_me
 
 
@@ -12,7 +13,7 @@ class YamdbUser(AbstractUser):
         ADMIN = ('admin', 'admin')
 
     username = models.CharField(
-        max_length=150,
+        max_length=MAX_USERNAME_LENGTH,
         unique=True,
         validators=[UnicodeUsernameValidator(), validate_username_me],
         error_messages={

@@ -5,6 +5,7 @@ from django.db.models import Avg
 from django.utils import timezone
 from rest_framework import serializers
 
+from users.constants import MAX_USERNAME_LENGTH
 from users.validators import validate_username_me
 from reviews.models import Category, Comment, Genre, Review, Title
 
@@ -100,8 +101,6 @@ class CommentSerializer(serializers.ModelSerializer):
         exclude = ('review',)
 
 
-
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (
@@ -116,13 +115,13 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TokenSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
-    confirmation_code = serializers.CharField(max_length=50)
+    username = serializers.CharField(max_length=MAX_USERNAME_LENGTH)
+    confirmation_code = serializers.SlugField()
 
 
 class SignupSerializer(serializers.Serializer):
     username = serializers.CharField(
-        max_length=150,
+        max_length=MAX_USERNAME_LENGTH,
         validators=[validate_username_me, UnicodeUsernameValidator()],
     )
     email = serializers.EmailField(max_length=254)

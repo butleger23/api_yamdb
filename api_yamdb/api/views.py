@@ -10,7 +10,11 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.filters import TitleFilter
-from api.permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrModeratorOrReadOnly
+from api.permissions import (
+    IsAdmin,
+    IsAdminOrReadOnly,
+    IsAuthorOrModeratorOrReadOnly,
+)
 from api.serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -20,9 +24,10 @@ from api.serializers import (
     TitleWriteSerializer,
     TitleReadSerializer,
     TokenSerializer,
-    UserSerializer
+    UserSerializer,
 )
 from api.viewsets import ListDestroyCreateGenreCategoryViewSet, NoPutViewSet
+from api_yamdb.settings import EMAIL_HOST_USER
 from reviews.models import Category, Genre, Review, Title
 
 
@@ -113,11 +118,10 @@ class UserViewSet(NoPutViewSet):
             return Response(serializer.data)
 
         serializer = UserSerializer(user, data=request.data, partial=True)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.validated_data.pop('role', None)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -125,7 +129,7 @@ class UserViewSet(NoPutViewSet):
 def signup(request):
     serializer = SignupSerializer(data=request.data)
 
-    if serializer.is_valid():
+    if serializer.is_valid(raise_exception=True):
         user_with_provided_username = User.objects.filter(
             username=request.data['username']
         ).first()
@@ -151,27 +155,27 @@ def signup(request):
         send_mail(
             subject='Yamdb confirmation code',
             message=f'Here is your confirmation code {confirmation_code}',
-            from_email=os.getenv('host_email'),
+            from_email=EMAIL_HOST_USER,
             recipient_list=[serializer.validated_data['email']],
             fail_silently=False,
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def token(request):
     serializer = TokenSerializer(data=request.data)
-    if serializer.is_valid():
+    if serializer.is_valid(raise_exception=True):
         confirmation_code = request.data['confirmation_code']
         user = get_object_or_404(User, username=request.data['username'])
-        if tokens.default_token_generator.check_token(user, confirmation_code):
-            refresh = RefreshToken.for_user(user)
+        if not tokens.default_token_generator.check_token(
+            user, confirmation_code
+        ):
             return Response(
-                {'token': str(refresh.access_token)}, status=status.HTTP_200_OK
+                'Wrong confirmaton code', status=status.HTTP_400_BAD_REQUEST
             )
+        refresh = RefreshToken.for_user(user)
         return Response(
-            'Wrong confirmaton code', status=status.HTTP_400_BAD_REQUEST
+            {'token': str(refresh.access_token)}, status=status.HTTP_200_OK
         )
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
