@@ -1,9 +1,15 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
 from django.utils import timezone
 from rest_framework import serializers
 
+from users.validators import validate_username_me
 from reviews.models import Category, Comment, Genre, Review, Title
+
+
+User = get_user_model()
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -92,3 +98,34 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         exclude = ('review',)
+
+
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+        model = User
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    confirmation_code = serializers.CharField(max_length=50)
+
+
+class SignupSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        max_length=150,
+        validators=[validate_username_me, UnicodeUsernameValidator()],
+    )
+    email = serializers.EmailField(max_length=254)
+
+    def create(self, validated_data):
+        return User.objects.create(**validated_data)
