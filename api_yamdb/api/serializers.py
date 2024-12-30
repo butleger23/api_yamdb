@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
-from django.utils import timezone
+
 from rest_framework import serializers
 
 from users.constants import MAX_USERNAME_LENGTH
@@ -14,13 +14,13 @@ User = get_user_model()
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        exclude = ['id']
+        fields = ('name', 'slug')
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        exclude = ['id']
+        fields = ('name', 'slug')
         model = Genre
 
 
@@ -30,30 +30,51 @@ class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(default=None, read_only=True)
 
     class Meta:
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
         model = Title
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        if isinstance(representation['genre'], list):
+            representation['genre'] = [
+                {
+                    'name': (
+                        genre['name'] if isinstance(genre, dict) else genre
+                    ),
+                    'slug': (
+                        genre['slug'] if isinstance(genre, dict) else genre
+                    )
+                } for genre in representation['genre']
+            ]
+        else:
+            raise ValueError("Expected 'genre' to be a list of dictionaries.")
+
+        if isinstance(representation['category'], dict):
+            representation['category'] = {
+                'name': representation['category']['name'],
+                'slug': representation['category']['slug']
+            }
+        else:
+            representation['category'] = {'name': None, 'slug': None}
+
+        return representation
 
 
 class TitleWriteSerializer(TitleReadSerializer):
     genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(), slug_field='slug', many=True
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True,
+        allow_null=True,
+        allow_empty=True
     )
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(),
         slug_field='slug',
     )
-
-    def validate_year(self, value):
-        if value > timezone.now().year:
-            raise ValidationError('Вы не можете указать год в будущем времени')
-        return value
-
-    def validate_name(self, value):
-        if len(value) > 256:
-            raise ValidationError(
-                'Название произведения не может быть длиннее 256 символов.'
-            )
-        return value
 
 
 class ReviewSerializer(serializers.ModelSerializer):

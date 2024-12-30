@@ -47,9 +47,9 @@ class GenreViewSet(ListDestroyCreateGenreCategoryViewSet):
 class TitleViewSet(NoPutViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')).order_by(*Title._meta.ordering)
-    permission_classes = [
+    permission_classes = (
         IsAdminOrReadOnly,
-    ]
+    )
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
@@ -61,9 +61,9 @@ class TitleViewSet(NoPutViewSet):
 
 class ReviewViewSet(NoPutViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [
+    permission_classes = (
         IsAuthorOrModeratorOrReadOnly,
-    ]
+    )
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_pk'))
@@ -77,9 +77,9 @@ class ReviewViewSet(NoPutViewSet):
 
 class CommentViewSet(NoPutViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [
+    permission_classes = (
         IsAuthorOrModeratorOrReadOnly,
-    ]
+    )
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_pk'))
