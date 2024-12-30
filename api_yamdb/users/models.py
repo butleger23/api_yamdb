@@ -36,3 +36,9 @@ class YamdbUser(AbstractUser):
 
     def __str__(self):
         return f'Пользователь - {self.username}'
+
+    def is_moderator(self):
+        return self.role == 'moderator'
+
+    def is_admin(self):
+        return self.is_superuser or self.role == 'admin'
