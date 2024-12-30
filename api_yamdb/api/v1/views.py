@@ -81,12 +81,12 @@ class CommentViewSet(NoPutViewSet):
         IsAuthorOrModeratorOrReadOnly,
     )
 
-    def get_title(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('title_pk'))
-
     def get_review(self):
         return get_object_or_404(
-            Review, pk=self.kwargs.get('review_pk'), title=self.get_title())
+            Review.objects.select_related('title'),
+            pk=self.kwargs.get('review_pk'),
+            title_id=self.kwargs.get('title_pk')
+        )
 
     def get_queryset(self):
         return self.get_review().comments.all()
