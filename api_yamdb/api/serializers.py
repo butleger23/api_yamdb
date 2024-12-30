@@ -126,8 +126,8 @@ class SignupSerializer(serializers.Serializer):
     )
     email = serializers.EmailField(max_length=254)
 
-    def create(self, validated_data):
-        return User.objects.create(**validated_data)
+    # def create(self, validated_data):
+    #     return User.objects.create(**validated_data)
 
     def validate(self, data):
         error_msg = {}
@@ -138,7 +138,7 @@ class SignupSerializer(serializers.Serializer):
             email=data['email']
         ).first()
         if not user_with_provided_username and not user_with_provided_email:
-            User.objects.create(**data)
+            pass
         elif user_with_provided_username == user_with_provided_email:
             pass
         elif user_with_provided_username and user_with_provided_email:

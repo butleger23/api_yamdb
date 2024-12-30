@@ -130,8 +130,10 @@ def signup(request):
     serializer = SignupSerializer(data=request.data)
 
     if serializer.is_valid(raise_exception=True):
-        user = User.objects.get(username=request.data['username'])
-
+        user, _ = User.objects.get_or_create(
+            username=request.data.get('username'),
+            email=request.data.get('email'),
+        )
         confirmation_code = tokens.default_token_generator.make_token(user)
         send_mail(
             subject='Yamdb confirmation code',
