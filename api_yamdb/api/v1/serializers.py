@@ -40,36 +40,8 @@ class TitleReadSerializer(serializers.ModelSerializer):
         )
         model = Title
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
 
-        if isinstance(representation["genre"], list):
-            representation["genre"] = [
-                {
-                    "name": (
-                        genre["name"] if isinstance(genre, dict) else genre
-                    ),
-                    "slug": (
-                        genre["slug"] if isinstance(genre, dict) else genre
-                    ),
-                }
-                for genre in representation["genre"]
-            ]
-        else:
-            raise ValueError("Expected 'genre' to be a list of dictionaries.")
-
-        if isinstance(representation["category"], dict):
-            representation["category"] = {
-                "name": representation["category"]["name"],
-                "slug": representation["category"]["slug"],
-            }
-        else:
-            representation["category"] = {"name": None, "slug": None}
-
-        return representation
-
-
-class TitleWriteSerializer(TitleReadSerializer):
+class TitleWriteSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         queryset=Genre.objects.all(),
         slug_field="slug",
@@ -81,6 +53,16 @@ class TitleWriteSerializer(TitleReadSerializer):
         queryset=Category.objects.all(),
         slug_field="slug",
     )
+
+    class Meta:
+        model = Title
+        fields = (
+            'name', 'year', 'description', 'genre', 'category'
+        )
+
+    def to_representation(self, instance):
+        read_serializer = TitleReadSerializer(instance)
+        return read_serializer.data
 
 
 class ReviewSerializer(serializers.ModelSerializer):
