@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
-from django.db.models import Avg
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -28,18 +27,11 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(default=None, read_only=True)
 
     class Meta:
         fields = '__all__'
         model = Title
-
-    def get_rating(self, obj):
-        reviews = obj.reviews.all()
-        if not reviews.exists():
-            return None
-        average_score = reviews.aggregate(Avg('score')).get('score__avg', None)
-        return round(average_score, 2) if average_score is not None else None
 
 
 class TitleWriteSerializer(TitleReadSerializer):
