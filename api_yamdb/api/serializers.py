@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
-from django.db.models import Avg
+
 from rest_framework import serializers
 
 from users.constants import MAX_USERNAME_LENGTH
@@ -61,13 +61,6 @@ class TitleReadSerializer(serializers.ModelSerializer):
             representation['category'] = {'name': None, 'slug': None}
 
         return representation
-
-    def get_rating(self, obj):
-        reviews = obj.reviews.all()
-        if not reviews.exists():
-            return None
-        average_score = reviews.aggregate(Avg('score')).get('score__avg', None)
-        return round(average_score, 2) if average_score is not None else None
 
 
 class TitleWriteSerializer(TitleReadSerializer):
