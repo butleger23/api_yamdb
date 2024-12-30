@@ -1,9 +1,8 @@
-import os
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import serializers, filters, status
 from django.contrib.auth import get_user_model, tokens
 from django.core.mail import send_mail
+from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
+from rest_framework import filters, serializers, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -21,8 +20,8 @@ from api.serializers import (
     GenreSerializer,
     ReviewSerializer,
     SignupSerializer,
-    TitleWriteSerializer,
     TitleReadSerializer,
+    TitleWriteSerializer,
     TokenSerializer,
     UserSerializer,
 )
