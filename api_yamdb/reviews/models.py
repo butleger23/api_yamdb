@@ -10,10 +10,8 @@ YamdbUser = get_user_model()
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=256, verbose_name='Название')
-    slug = models.SlugField(
-        unique=True, max_length=50, verbose_name='Слаг'
-    )
+    name = models.CharField(max_length=MAX_LENGTH, verbose_name='Название')
+    slug = models.SlugField(unique=True, verbose_name='Слаг')
 
     class Meta:
         verbose_name = 'Категория'
