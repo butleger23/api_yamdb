@@ -5,6 +5,8 @@ from django.db import models
 from .validator import year_validator
 
 MAX_LENGTH = 256
+MIN_SCORE = 1
+MAX_SCORE = 10
 
 YamdbUser = get_user_model()
 
@@ -113,10 +115,14 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Автор'
     )
-    score = models.IntegerField(
-        verbose_name='Рейтинг',
-        validators=(MinValueValidator(1), MaxValueValidator(10))
-    )
+    score = models.IntegerField(verbose_name='Рейтинг', validators=[
+        MinValueValidator(
+            MIN_SCORE,
+            message='Минимальное значение рейтинга — {MIN_SCORE}.'),
+        MaxValueValidator(
+            MAX_SCORE,
+            message='Максимальное значение рейтинга — {MAX_SCORE}.')
+    ])
     pub_date = models.DateTimeField(
         auto_now=True,
         verbose_name='Дата ревью'
