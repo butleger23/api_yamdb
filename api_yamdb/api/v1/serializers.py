@@ -56,9 +56,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = (
-            'name', 'year', 'description', 'genre', 'category'
-        )
+        fields = ("name", "year", "description", "genre", "category")
 
     def to_representation(self, instance):
         read_serializer = TitleReadSerializer(instance)
@@ -137,7 +135,9 @@ class SignupSerializer(serializers.Serializer):
 
         if user_with_provided_email != user_with_provided_username:
             if user_with_provided_email:
-                error_msg["email"] = ["Пользователь с таким email уже существует."]
+                error_msg["email"] = [
+                    "Пользователь с таким email уже существует."
+                ]
             if user_with_provided_username:
                 error_msg["username"] = [
                     "Пользователь с таким username уже существует."
