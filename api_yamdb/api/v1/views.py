@@ -9,13 +9,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from api.filters import TitleFilter
-from api.permissions import (
+from api_yamdb.settings import EMAIL_HOST_USER
+from .filters import TitleFilter
+from .permissions import (
     IsAdmin,
     IsAdminOrReadOnly,
     IsAuthorOrModeratorOrReadOnly,
 )
-from api.serializers import (
+from .serializers import (
     CategorySerializer,
     CommentSerializer,
     GenreSerializer,
@@ -26,8 +27,7 @@ from api.serializers import (
     TokenSerializer,
     UserSerializer,
 )
-from api.viewsets import ListDestroyCreateGenreCategoryViewSet, NoPutViewSet
-from api_yamdb.settings import EMAIL_HOST_USER
+from .viewsets import ListDestroyCreateGenreCategoryViewSet, NoPutViewSet
 from reviews.models import Category, Genre, Review, Title
 
 
