@@ -23,11 +23,11 @@
 Клонировать репозиторий и перейти в него в командной строке:
 
 ```
-git clone git@github.com:butleger23/api_yamdb.git
+git clone https://github.com/butleger23/Yamdb_API.git
 ```
 
 ```
-cd api_final_yamdb
+cd Yamdb_API
 ```
 
 Cоздать и активировать виртуальное окружение:
